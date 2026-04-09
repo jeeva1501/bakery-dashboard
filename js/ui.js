@@ -70,6 +70,12 @@ const ui = {
         // Update state
         this.state.currentView = viewId;
 
+        // Auto collapse sidebar on mobile upon navigation
+        if (window.innerWidth < 768) {
+            const sidebar = document.getElementById('sidebar');
+            if(sidebar) sidebar.classList.add('-translate-x-full');
+        }
+
         // Update nav active states
         document.querySelectorAll('.nav-link').forEach(link => {
             if (link.getAttribute('data-view') === viewId) {
