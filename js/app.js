@@ -110,11 +110,11 @@ const app = {
                         let html = '';
                         top5.forEach(item => {
                             html += `
-                            <div class="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                                <div class="flex items-center gap-1.5 mb-2 text-brand-600 text-[10px] font-bold uppercase tracking-wider">
-                                    <i class="fas fa-tag"></i> <span>${item[1].category}</span>
+                            <div class="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow min-w-0 w-full overflow-hidden box-border">
+                                <div class="flex items-center gap-1.5 mb-2 text-brand-600 text-[10px] font-bold uppercase tracking-wider w-full overflow-hidden">
+                                    <i class="fas fa-tag flex-shrink-0"></i> <span class="truncate block w-full">${item[1].category}</span>
                                 </div>
-                                <h4 class="text-gray-800 font-bold text-base leading-tight mb-5 line-clamp-2">${item[0]}</h4>
+                                <h4 class="text-gray-800 font-bold text-base leading-tight mb-5 line-clamp-2 break-words w-full overflow-hidden">${item[0]}</h4>
                                 
                                 <div class="mt-auto flex flex-col gap-1.5 text-xs text-gray-500 pt-3 border-t border-brand-200/50">
                                     <div class="flex justify-between items-center">
