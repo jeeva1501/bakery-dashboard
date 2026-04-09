@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tailwind CSS (via CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased overflow-hidden">
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-white/80 backdrop-blur-sm z-[100] flex flex-col items-center justify-center hidden">
+        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+        <p class="text-brand-700 font-semibold text-lg">Loading data...</p>
+    </div>
+
+    <div class="flex h-screen w-full">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-brand-900 text-white w-64 flex-shrink-0 transition-all duration-300 ease-in-out z-20 shadow-xl flex flex-col relative md:translate-x-0 -translate-x-full absolute md:relative h-full">
+            <div class="p-5 flex items-center justify-between border-b border-brand-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-brand-500 flex items-center justify-center font-bold text-xl shadow-lg">
+                        B
+                    </div>
+                    <h1 class="text-lg font-bold tracking-wider sidebar-text">Sweet & Savory Bakery</h1>
+                </div>
+                <button id="closeSidebarMobile" class="md:hidden text-gray-300 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <nav class="flex-1 overflow-y-auto py-4">
+                <ul class="space-y-1 px-3">
+                    <li>
+                        <a href="#" data-view="dashboard" class="nav-link active flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors">
+                            <i class="fas fa-chart-line w-5 text-center"></i>
+                            <span class="sidebar-text">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="today" class="nav-link flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group">
+                            <i class="fas fa-calendar-day w-5 text-center group-hover:scale-110 transition-transform"></i>
+                            <span class="sidebar-text">Today's Orders</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="range" class="nav-link flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group">
+                            <i class="fas fa-calendar-alt w-5 text-center group-hover:scale-110 transition-transform"></i>
+                            <span class="sidebar-text">Date Range</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" data-view="category" class="nav-link flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors group">
+                            <i class="fas fa-layer-group w-5 text-center group-hover:scale-110 transition-transform"></i>
+                            <span class="sidebar-text">Category Summary</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="p-4 border-t border-brand-800 text-xs text-brand-100 text-center sidebar-text">
+                &copy; 2026 Corp Dashboard
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-full overflow-hidden relative w-full bg-slate-50">
+            <!-- Header -->
+            <header class="bg-white shadow-[0_4px_20px_-10px_rgba(0,0,0,0.1)] py-4 px-6 flex items-center justify-between z-10 sticky top-0 backdrop-blur-md bg-white/90">
+                <div class="flex items-center gap-4">
+                    <button id="toggleSidebar" class="text-brand-800 hover:text-brand-600 transition-colors p-2 rounded-md hover:bg-brand-50 focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h2 id="pageTitle" class="text-xl font-bold text-gray-800 tracking-tight">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Global Date Indicator / User Info -->
+                    <div class="hidden sm:flex items-center gap-2 text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+                        <i class="far fa-clock"></i>
+                        <span id="currentDateDisplay">Date</span>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white shadow-md cursor-pointer hover:shadow-lg transition-shadow">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Page Content -->
+            <div class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6 lg:p-8" id="mainContainer">
+                
+                <!-- DASHBOARD VIEW -->
+                <div id="view-dashboard" class="view-section active animate-fade-in">
+                    <!-- KPI Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <!-- Total Records Card -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-br from-brand-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 relative z-10">
+                                <i class="fas fa-database text-xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <p class="text-sm text-gray-500 font-medium mb-1">Total Records Today</p>
+                                <h3 id="kp-today-records" class="text-2xl font-bold text-gray-800">0</h3>
+                            </div>
+                        </div>
+                        
+                        <!-- Revenue Today Card -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
+                            <div class="absolute inset-0 bg-gradient-to-br from-green-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-600 flex-shrink-0 relative z-10">
+                                <i class="fas fa-dollar-sign text-xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <p class="text-sm text-gray-500 font-medium mb-1">Revenue Today</p>
+                                <h3 id="kp-today-revenue" class="text-2xl font-bold text-gray-800">₹0.00</h3>
+                            </div>
+                        </div>
+
+                        <!-- Top Selling Item Card -->
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center gap-4 hover:shadow-md transition-shadow relative overflow-hidden group">
+                           <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0 relative z-10">
+                                <i class="fas fa-fire text-xl"></i>
+                            </div>
+                            <div class="relative z-10 w-full">
+                                <p class="text-sm text-gray-500 font-medium mb-1">Top Selling Item (Revenue)</p>
+                                <h3 id="kp-top-item" class="text-lg font-bold text-gray-800 break-words leading-tight">Loading...</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Area -->
+                    <div class="grid grid-cols-1 gap-6 mb-8">
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col items-center">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 px-1 w-full text-center">Revenue by Category</h3>
+                            <div class="h-96 w-full max-w-2xl flex items-center justify-center">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Orders Table Preview -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 class="text-lg font-semibold text-gray-800">Recent Orders (Today)</h3>
+                            <button onclick="ui.navigateTo('today')" class="text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">View All &rarr;</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-600">
+                                <thead class="text-xs text-gray-500 uppercase bg-gray-50/50">
+                                    <tr>
+                                        <th class="px-6 py-4 font-medium">Order ID</th>
+                                        <th class="px-6 py-4 font-medium">Time</th>
+                                        <th class="px-6 py-4 font-medium">Item</th>
+                                        <th class="px-6 py-4 font-medium">Category</th>
+                                        <th class="px-6 py-4 font-medium text-right">Qty</th>
+                                        <th class="px-6 py-4 font-medium text-right">Price</th>
+                                        <th class="px-6 py-4 font-medium text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-recent-orders" class="divide-y divide-gray-100">
+                                    <!-- Populated by JS -->
+                                    <tr><td colspan="5" class="py-10 text-center text-gray-400">Loading recent orders...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TODAY ORDERS VIEW -->
+                <div id="view-today" class="view-section hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full min-h-[500px]">
+                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                            <div class="relative w-full sm:w-64">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="search-today" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow text-sm" placeholder="Search orders...">
+                            </div>
+                            <button onclick="ui.exportToCsv('today')" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:text-brand-600 transition-colors text-sm font-medium shadow-sm">
+                                <i class="fas fa-download"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-x-auto relative">
+                           <!-- Table Rendered by JS -->
+                           <div id="table-container-today"></div>
+                        </div>
+                        <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center" id="pagination-today">
+                            <!-- Pagination -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DATE RANGE VIEW -->
+                <div id="view-range" class="view-section hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-6 flex flex-col sm:flex-row items-end gap-4">
+                        <div class="flex-1 w-full relative">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">From Date (DD.MM.YYYY)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="far fa-calendar"></i>
+                                </div>
+                                <input type="date" id="range-from" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full relative">
+                            <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">To Date (DD.MM.YYYY)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                    <i class="far fa-calendar"></i>
+                                </div>
+                                <input type="date" id="range-to" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 text-sm">
+                            </div>
+                        </div>
+                        <button id="btn-fetch-range" class="w-full sm:w-auto bg-brand-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-brand-700 hover:shadow-lg transition-all focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 active:scale-95 shadow-md flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i> Fetch Data
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
+                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                            <h3 class="text-lg font-semibold text-gray-800">Results</h3>
+                             <button onclick="ui.exportToCsv('range')" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:text-brand-600 transition-colors text-sm font-medium shadow-sm">
+                                <i class="fas fa-download"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-x-auto relative">
+                           <div id="table-container-range">
+                               <div class="flex flex-col items-center justify-center py-16 text-gray-400">
+                                   <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
+                                   <p>Select dates and click Fetch Data</p>
+                               </div>
+                           </div>
+                        </div>
+                         <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center hidden" id="pagination-range">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CATEGORY SUMMARY VIEW -->
+                <div id="view-category" class="view-section hidden animate-fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col min-h-[500px]">
+                            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white">
+                                <div class="relative w-64">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" id="search-category" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow text-sm" placeholder="Search categories...">
+                                </div>
+                                <button onclick="ui.exportToCsv('category')" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:text-brand-600 transition-colors text-sm font-medium shadow-sm">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                            <div class="flex-1 overflow-x-auto">
+                                <div id="table-container-category"></div>
+                            </div>
+                            <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center" id="pagination-category"></div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4 px-1 border-b border-gray-100 pb-4">Category Distribution</h3>
+                            <div class="flex-1 flex items-center justify-center relative min-h-[300px]">
+                                <canvas id="categoryViewPieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ITEM SUMMARY VIEW -->
+                <div id="view-item" class="view-section hidden animate-fade-in">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full min-h-[500px]">
+                        <div class="p-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white">
+                            <div class="relative w-full sm:w-64">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" id="search-item" class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-shadow text-sm" placeholder="Search items...">
+                            </div>
+                            <button onclick="ui.exportToCsv('item')" class="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 hover:text-brand-600 transition-colors text-sm font-medium shadow-sm">
+                                <i class="fas fa-download"></i> Export CSV
+                            </button>
+                        </div>
+                        <div class="flex-1 overflow-x-auto relative">
+                           <div id="table-container-item"></div>
+                        </div>
+                        <div class="p-4 border-t border-gray-100 bg-gray-50 flex justify-between items-center" id="pagination-item">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/apiService.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

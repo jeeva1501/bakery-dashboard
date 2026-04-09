@@ -1,0 +1,94 @@
+/* Custom Styles beyond Tailwind utilities */
+
+.loader {
+    border-top-color: #2563eb;
+    -webkit-animation: spinner 1.5s linear infinite;
+    animation: spinner 1.5s linear infinite;
+}
+
+@keyframes spinner {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Sidebar active link styling */
+.nav-link.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    box-shadow: inset 3px 0 0 #3b82f6;
+}
+
+.nav-link:not(.active) {
+    color: #94a3b8;
+}
+
+.nav-link:not(.active):hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+/* Page transitions */
+.animate-fade-in {
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Table styles overrides for better aesthetics */
+table th {
+    letter-spacing: 0.05em;
+}
+
+table tr {
+    transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+    background-color: #f8fafc; /* Tailwind slate-50 */
+}
+
+/* Sidebar Collapse Logic */
+#sidebar.collapsed {
+    width: 5rem; /* 80px */
+}
+
+#sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute; /* Hide from flow but keep DOM element */
+    visibility: hidden;
+}
+
+#sidebar {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-text {
+    transition: opacity 0.2s ease;
+}
+
+/* Toasts / Notifications generic */
+.toast-success { border-left: 4px solid #10b981; }
+.toast-error { border-left: 4px solid #ef4444; }
