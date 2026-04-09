@@ -18,11 +18,18 @@ const app = {
 
         // Load dashboard by default
         await this.loadDashboardData();
+
+        // Start background poller every 5 seconds per user request
+        setInterval(() => {
+            if (!document.hidden) {
+                this.loadViewData(ui.state.currentView, true);
+            }
+        }, 5000);
     },
 
-    async loadViewData(viewId) {
+    async loadViewData(viewId, force = false) {
         // If data is already loaded for this view, just re-render/re-chart
-        if (this.loadedViews[viewId]) {
+        if (!force && this.loadedViews[viewId]) {
             if (viewId === 'category' && dashboardCharts.categoryPieInstance) {
                 // Resize trick for Chart.js inside hidden divs
                 dashboardCharts.categoryPieInstance.resize();
@@ -51,7 +58,7 @@ const app = {
 
     async refreshAllData() {
         this.loadedViews = {}; // clear cache
-        await this.loadViewData(ui.state.currentView);
+        await this.loadViewData(ui.state.currentView, true);
         ui.showToast('Data refreshed successfully');
     },
 
