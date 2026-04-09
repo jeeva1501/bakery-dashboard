@@ -22,12 +22,12 @@ const app = {
         // Start background poller every 5 seconds per user request
         setInterval(() => {
             if (!document.hidden) {
-                this.loadViewData(ui.state.currentView, true);
+                this.loadViewData(ui.state.currentView, true, true);
             }
         }, 5000);
     },
 
-    async loadViewData(viewId, force = false) {
+    async loadViewData(viewId, force = false, silent = false) {
         // If data is already loaded for this view, just re-render/re-chart
         if (!force && this.loadedViews[viewId]) {
             if (viewId === 'category' && dashboardCharts.categoryPieInstance) {
@@ -39,19 +39,19 @@ const app = {
 
         switch (viewId) {
             case 'today':
-                await this.loadTodayData();
+                await this.loadTodayData(silent);
                 break;
             case 'category':
-                await this.loadCategoryData();
+                await this.loadCategoryData(silent);
                 break;
             case 'item':
-                await this.loadItemData();
+                await this.loadItemData(silent);
                 break;
             case 'range':
                 // Do not fetch immediately, let the user pick dates.
                 break;
             case 'dashboard':
-                await this.loadDashboardData();
+                await this.loadDashboardData(silent);
                 break;
         }
     },
@@ -62,12 +62,12 @@ const app = {
         ui.showToast('Data refreshed successfully');
     },
 
-    async loadDashboardData() {
+    async loadDashboardData(silent = false) {
         try {
             // Fetch parallel
             const [todayRes, categoryRes] = await Promise.all([
-                apiService.getTodayOrders(),
-                apiService.getCategorySummary()
+                apiService.getTodayOrders(silent),
+                apiService.getCategorySummary(silent)
             ]);
 
             // 1. Update KPI Cards
@@ -140,8 +140,8 @@ const app = {
         }
     },
 
-    async loadTodayData() {
-        const res = await apiService.getTodayOrders();
+    async loadTodayData(silent = false) {
+        const res = await apiService.getTodayOrders(silent);
         if (res && res.orders) {
             ui.state.data['today'] = res.orders;
             ui.renderTable('today');
@@ -149,8 +149,8 @@ const app = {
         }
     },
 
-    async loadCategoryData() {
-        const res = await apiService.getCategorySummary();
+    async loadCategoryData(silent = false) {
+        const res = await apiService.getCategorySummary(silent);
         if (res && res.categories) {
             ui.state.data['category'] = res.categories;
             ui.renderTable('category');
@@ -167,8 +167,8 @@ const app = {
         }
     },
 
-    async loadItemData() {
-        const res = await apiService.getItemSummary();
+    async loadItemData(silent = false) {
+        const res = await apiService.getItemSummary(silent);
         if (res && res.items) {
             ui.state.data['item'] = res.items;
             ui.renderTable('item');
