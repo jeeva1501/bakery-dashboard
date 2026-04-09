@@ -24,7 +24,7 @@ const app = {
             if (!document.hidden) {
                 this.loadViewData(ui.state.currentView, true, true);
             }
-        }, 5000);
+        }, 10000);
     },
 
     async loadViewData(viewId, force = false, silent = false) {
@@ -87,7 +87,8 @@ const app = {
                     let qty = price > 0 ? Math.round(total / price) : 1;
                     
                     const name = order.item_name || 'Unknown';
-                    if (!itemStats[name]) itemStats[name] = { qty: 0, revenue: 0 };
+                    const category = order.category_name || 'Uncategorized';
+                    if (!itemStats[name]) itemStats[name] = { qty: 0, revenue: 0, category: category };
                     itemStats[name].qty += qty;
                     itemStats[name].revenue += total;
                 });
@@ -101,6 +102,37 @@ const app = {
                     document.getElementById('kp-top-item').textContent = "N/A";
                 }
 
+                // Render Top 5 Products Grid
+                const topGrid = document.getElementById('top-selling-products-grid');
+                if (topGrid) {
+                    if (sortedItems.length > 0) {
+                        const top5 = sortedItems.slice(0, 5);
+                        let html = '';
+                        top5.forEach(item => {
+                            html += `
+                            <div class="bg-brand-50 border-2 border-brand-100 rounded-xl p-4 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex items-center gap-1.5 mb-2 text-brand-600 text-[10px] font-bold uppercase tracking-wider">
+                                    <i class="fas fa-tag"></i> <span>${item[1].category}</span>
+                                </div>
+                                <h4 class="text-gray-800 font-bold text-base leading-tight mb-5 line-clamp-2">${item[0]}</h4>
+                                
+                                <div class="mt-auto flex flex-col gap-1.5 text-xs text-gray-500 pt-3 border-t border-brand-200/50">
+                                    <div class="flex justify-between items-center">
+                                       <span>Quantity:</span> <span class="text-brand-700 font-extrabold text-sm">${item[1].qty}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center">
+                                       <span>Total:</span> <span class="text-gray-900 font-extrabold text-sm">₹${item[1].revenue.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            `;
+                        });
+                        topGrid.innerHTML = html;
+                    } else {
+                        topGrid.innerHTML = '<div class="col-span-full py-10 text-center text-gray-400">No items sold today.</div>';
+                    }
+                }
+
                 // Store in state & render recent preview
                 ui.state.data['dashboard-recent'] = todayRes.orders;
                 ui.renderTable('dashboard-recent', todayRes.orders.slice(0, 5));
@@ -112,14 +144,9 @@ const app = {
             }
 
 
-            // 3. Category Summary -> Pie Chart & Top Category Card
+            // 3. Category Summary -> Top Category Card
             if (categoryRes && categoryRes.categories) {
                 const sorted = categoryRes.categories.sort((a,b) => b.total_amount - a.total_amount);
-                
-                // Render Chart
-                const labels = sorted.map(c => c.category_name);
-                const data = sorted.map(c => c.total_amount);
-                dashboardCharts.initPieChart('pieChart', labels, data, 'pieChartInstance');
                 
                 // Also cache 'category' view and render
                 ui.state.data['category'] = categoryRes.categories;
