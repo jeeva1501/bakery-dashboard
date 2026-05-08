@@ -10,10 +10,10 @@ const ui = {
             item: []
         },
         pagination: {
-            today: { page: 1, limit: 10 },
-            range: { page: 1, limit: 10 },
-            category: { page: 1, limit: 10 },
-            item: { page: 1, limit: 10 }
+            today: { page: 1, limit: 100 },
+            range: { page: 1, limit: 100 },
+            category: { page: 1, limit: 100 },
+            item: { page: 1, limit: 100 }
         },
         search: {
             today: '',
@@ -204,7 +204,7 @@ const ui = {
 
         // Pagination calculations
         const totalRecords = dataToRender.length;
-        let limit = this.state.pagination[view]?.limit || 10;
+        let limit = this.state.pagination[view]?.limit || 100;
         let page = this.state.pagination[view]?.page || 1;
         
         // If overrideData is passed (e.g. Dashboard), disable pagination

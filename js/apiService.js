@@ -9,7 +9,9 @@ const apiService = {
             if (!response.ok) {
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
             }
-            const data = await response.json();
+            const text = await response.text();
+            const replacedText = text.replace(/athiyan/gi, 'shiva');
+            const data = JSON.parse(replacedText);
             return data;
         } catch (error) {
             console.error("API Request Failed:", error);
