@@ -16,6 +16,16 @@ const app = {
              this.fetchRangeData();
         });
 
+        // Bind global item search
+        const globalSearchBtn = document.getElementById('globalItemSearchBtn');
+        const globalSearchInput = document.getElementById('globalItemSearchInput');
+        if (globalSearchBtn && globalSearchInput) {
+            globalSearchBtn.addEventListener('click', () => this.handleGlobalItemSearch());
+            globalSearchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') this.handleGlobalItemSearch();
+            });
+        }
+
         // Load dashboard by default
         await this.loadDashboardData();
 
@@ -230,6 +240,76 @@ const app = {
             ui.state.data['range'] = [];
             ui.renderTable('range');
         }
+    },
+
+    async handleGlobalItemSearch() {
+        const input = document.getElementById('globalItemSearchInput');
+        const searchTerm = input.value.trim().toLowerCase();
+        if (!searchTerm) {
+            ui.showToast('Please enter an item name to search', 'error');
+            return;
+        }
+
+        ui.showLoading();
+
+        let itemData = ui.state.data['item'];
+        if (!itemData || itemData.length === 0) {
+            const res = await apiService.getItemSummary(true);
+            if (res && res.items) {
+                itemData = res.items;
+                ui.state.data['item'] = itemData; 
+            }
+        }
+        
+        ui.hideLoading();
+
+        if (itemData) {
+            const matches = itemData.filter(item => (item.item_name || '').toLowerCase().includes(searchTerm));
+            if (matches.length > 0) {
+                const totalValue = matches.reduce((sum, item) => sum + parseFloat(item.total_amount || 0), 0);
+                const totalQty = matches.reduce((sum, item) => sum + parseFloat(item.quantity_sold || 0), 0);
+                this.showItemValueModal(searchTerm, totalValue, totalQty);
+                input.value = ''; // clear input
+            } else {
+                ui.showToast(`No item found matching "${searchTerm}"`, 'error');
+            }
+        } else {
+            ui.showToast('Failed to fetch item data', 'error');
+        }
+    },
+
+    showItemValueModal(searchTerm, totalValue, totalQty) {
+        const modalId = 'itemSearchModal';
+        let modal = document.getElementById(modalId);
+        if (modal) modal.remove();
+
+        const html = `
+            <div id="${modalId}" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[150] flex items-center justify-center animate-fade-in p-4">
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all">
+                    <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-brand-50">
+                        <h3 class="text-lg font-bold text-brand-800"><i class="fas fa-search mr-2"></i>Search Result</h3>
+                        <button onclick="document.getElementById('${modalId}').remove()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                            <i class="fas fa-times text-lg"></i>
+                        </button>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-gray-500 mb-1">Search term: <span class="font-semibold text-gray-700">"${searchTerm}"</span></p>
+                        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 my-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm text-gray-600">Total Value:</span>
+                                <span class="text-xl font-bold text-brand-600">₹${totalValue.toFixed(2)}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Quantity Sold:</span>
+                                <span class="text-lg font-semibold text-gray-800">${totalQty}</span>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('${modalId}').remove()" class="w-full bg-brand-600 text-white py-2 rounded-lg font-medium hover:bg-brand-700 transition-colors">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', html);
     }
 };
 
