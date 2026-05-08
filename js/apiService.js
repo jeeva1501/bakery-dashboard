@@ -10,7 +10,7 @@ const apiService = {
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
             }
             const text = await response.text();
-            const replacedText = text.replace(/athiyan/gi, 'shiva');
+            const replacedText = text.replace(/athiyan/gi, 'Shiva');
             const data = JSON.parse(replacedText);
             return data;
         } catch (error) {
