@@ -19,10 +19,72 @@ const app = {
         // Bind global item search
         const globalSearchBtn = document.getElementById('globalItemSearchBtn');
         const globalSearchInput = document.getElementById('globalItemSearchInput');
+        const suggestionsBox = document.getElementById('globalItemSearchSuggestions');
+
         if (globalSearchBtn && globalSearchInput) {
-            globalSearchBtn.addEventListener('click', () => this.handleGlobalItemSearch());
+            globalSearchBtn.addEventListener('click', () => {
+                suggestionsBox?.classList.add('hidden');
+                this.handleGlobalItemSearch();
+            });
             globalSearchInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') this.handleGlobalItemSearch();
+                if (e.key === 'Enter') {
+                    suggestionsBox?.classList.add('hidden');
+                    this.handleGlobalItemSearch();
+                }
+            });
+
+            // Auto-suggestions logic
+            globalSearchInput.addEventListener('input', async (e) => {
+                const term = e.target.value.trim().toLowerCase();
+                if (!term) {
+                    suggestionsBox.classList.add('hidden');
+                    return;
+                }
+
+                let itemData = ui.state.data['item'];
+                if (!itemData || itemData.length === 0) {
+                    // Try fetching silently
+                    const res = await apiService.getItemSummary(true);
+                    if (res && res.items) {
+                        itemData = res.items;
+                        ui.state.data['item'] = itemData;
+                    } else {
+                        return;
+                    }
+                }
+
+                // Get unique item names matching the search term
+                const matches = Array.from(new Set(itemData
+                    .map(i => i.item_name || '')
+                    .filter(name => name.toLowerCase().includes(term))
+                )).slice(0, 8); // top 8 suggestions
+
+                if (matches.length > 0) {
+                    suggestionsBox.innerHTML = matches.map(name => `
+                        <div class="px-3 py-2 text-sm text-gray-700 hover:bg-brand-50 hover:text-brand-700 cursor-pointer transition-colors border-b border-gray-50 last:border-0 suggestion-item">
+                            ${name}
+                        </div>
+                    `).join('');
+                    suggestionsBox.classList.remove('hidden');
+
+                    // Bind click for each suggestion
+                    suggestionsBox.querySelectorAll('.suggestion-item').forEach(el => {
+                        el.addEventListener('click', () => {
+                            globalSearchInput.value = el.textContent.trim();
+                            suggestionsBox.classList.add('hidden');
+                            this.handleGlobalItemSearch();
+                        });
+                    });
+                } else {
+                    suggestionsBox.classList.add('hidden');
+                }
+            });
+
+            // Hide suggestions on click outside
+            document.addEventListener('click', (e) => {
+                if (suggestionsBox && !globalSearchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                    suggestionsBox.classList.add('hidden');
+                }
             });
         }
 
